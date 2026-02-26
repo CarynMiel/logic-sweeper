@@ -42,6 +42,18 @@ public class Chunk
 		return contents[yLocal][xLocal];
 	}
 	
+	// getting chunk key from x y position
+	public static long getKey(int x, int y) {
+		// making x occupy the upper 32 bits
+		long xLong = (long) x << 32;
+				
+		// making y occupy the lower 32 bits
+		long yLong = (long) y & 0xffffffffL;
+				
+		// combining the two to create the key
+		return xLong | yLong;
+	}
+	
 	// making outputs more readable
 	public String seeHiddenRow(int index) {
 		String text = "";

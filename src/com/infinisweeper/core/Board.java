@@ -36,7 +36,4 @@ public class Board
 	public int getXMax() {return xMax;}
 	public int getYMin() {return yMin;}
 	public int getYMax() {return yMax;}
-	
-	
-	// 
 }

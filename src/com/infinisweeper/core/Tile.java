@@ -18,7 +18,6 @@ public class Tile
 	private final int xLocal;
 	private final int yLocal;
 	private int number = -1;
-	private boolean checked = false;
 	
 	// constructor
 	public Tile(int xGlobal, int yGlobal) {
@@ -71,7 +70,6 @@ public class Tile
 	
 	// is a bomb
 	public boolean isBomb(long seed, double density) {
-		checked = true;
 		long hash = start;
 		hash ^= xGlobal * xPrime;
 		hash ^= yGlobal * yPrime;
@@ -85,42 +83,42 @@ public class Tile
 		return bomb;
 	}
 	public boolean isBomb() {
+		// should only be used after the isBomb() with parameters is called
 		if(hidden == Role.Bomb) {
 			return true;
 		} else {
 			return false;
 		}
 	}
-
-		
+	
 	// getting surrounding tiles
-	public ArrayList<int[]> globalSurrounding() {
+	public ArrayList<Long> globalSurrounding() {
 		// format: [[x,y], [x,y], ...]
-		ArrayList<int[]> tiles = new ArrayList<>();
+		ArrayList<Long> tiles = new ArrayList<>();
 		
-		tiles.add(new int[] {xGlobal-1, yGlobal-1});
-		tiles.add(new int[] {xGlobal-1, yGlobal});
-		tiles.add(new int[] {xGlobal-1, yGlobal+1});
-		tiles.add(new int[] {xGlobal, yGlobal-1});
-		tiles.add(new int[] {xGlobal, yGlobal+1});
-		tiles.add(new int[] {xGlobal+1, yGlobal-1});
-		tiles.add(new int[] {xGlobal+1, yGlobal});
-		tiles.add(new int[] {xGlobal+1, yGlobal+1});
+		tiles.add(Chunk.getKey(xGlobal-1, yGlobal-1));
+		tiles.add(Chunk.getKey(xGlobal-1, yGlobal));
+		tiles.add(Chunk.getKey(xGlobal-1, yGlobal+1));
+		tiles.add(Chunk.getKey(xGlobal, yGlobal-1));
+		tiles.add(Chunk.getKey(xGlobal, yGlobal+1));
+		tiles.add(Chunk.getKey(xGlobal+1, yGlobal-1));
+		tiles.add(Chunk.getKey(xGlobal+1, yGlobal));
+		tiles.add(Chunk.getKey(xGlobal+1, yGlobal+1));
 		
 		return tiles;		
 	}
-	public ArrayList<int[]> localSurrounding() {
+	public ArrayList<Long> localSurrounding() {
 		// format: [[x,y], [x,y], ...]
-		ArrayList<int[]> tiles = new ArrayList<>();
+		ArrayList<Long> tiles = new ArrayList<>();
 		
-		tiles.add(new int[] {xLocal-1, yLocal-1});
-		tiles.add(new int[] {xLocal-1, yLocal});
-		tiles.add(new int[] {xLocal-1, yLocal+1});
-		tiles.add(new int[] {xLocal, yLocal-1});
-		tiles.add(new int[] {xLocal, yLocal+1});
-		tiles.add(new int[] {xLocal+1, yLocal-1});
-		tiles.add(new int[] {xLocal+1, yLocal});
-		tiles.add(new int[] {xLocal+1, yLocal+1});
+		tiles.add(Chunk.getKey(xLocal-1, yLocal-1));
+		tiles.add(Chunk.getKey(xLocal-1, yLocal));
+		tiles.add(Chunk.getKey(xLocal-1, yLocal+1));
+		tiles.add(Chunk.getKey(xLocal, yLocal-1));
+		tiles.add(Chunk.getKey(xLocal, yLocal+1));
+		tiles.add(Chunk.getKey(xLocal+1, yLocal-1));
+		tiles.add(Chunk.getKey(xLocal+1, yLocal));
+		tiles.add(Chunk.getKey(xLocal+1, yLocal+1));
 		
 		return tiles;
 	}
