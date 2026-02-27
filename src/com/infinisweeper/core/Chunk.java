@@ -14,17 +14,46 @@ public class Chunk
 		this.x = x;
 		this.y = y;
 		
-		// making x occupy the upper 32 bits
-		long xLong = (long) x << 32;
-		
-		// making y occupy the lower 32 bits
-		long yLong = (long) y & 0xffffffffL;
-		
-		// combining the two to create the key
-		key = xLong | yLong;
+		key = getKey(x, y);
 	}
 	
 	// methods
+	
+	// static methods	
+	// getting chunk key from x y position
+	public static long getKey(int x, int y) {
+		// making x occupy the upper 32 bits
+		long xLong = (long) x << 32;
+				
+		// making y occupy the lower 32 bits
+		long yLong = (long) y & 0xffffffffL;
+				
+		// combining the two to create the key
+		return xLong | yLong;
+	}
+	// gets the chunk at global position x, y
+	public static int[] getChunk(int xGlobal, int yGlobal) {
+		int[] chunk = new int[2];
+		
+		chunk[0] = xGlobal / ChunkSize;
+		chunk[1] = yGlobal / ChunkSize;
+		
+		return chunk;
+	}
+	public static int[] getChunk(long key) {
+		int[] chunk = new int[2];
+		
+		chunk[0] = (int) (key >> 32);
+		chunk[1] = (int) (key & 0x00000000ffffffffL);
+		
+		return chunk;
+	}
+	public static int getXChunk(int xGlobal) {
+		return xGlobal / ChunkSize;
+	}
+	public static int getYChunk(int yGlobal) {
+		return yGlobal / ChunkSize;
+	}
 	
 	// getter methods
 	public Tile[][] getContents() {return contents;}
@@ -40,18 +69,6 @@ public class Chunk
 	// getting a single tile from the chunk
 	public Tile getTile(int xLocal, int yLocal) {
 		return contents[yLocal][xLocal];
-	}
-	
-	// getting chunk key from x y position
-	public static long getKey(int x, int y) {
-		// making x occupy the upper 32 bits
-		long xLong = (long) x << 32;
-				
-		// making y occupy the lower 32 bits
-		long yLong = (long) y & 0xffffffffL;
-				
-		// combining the two to create the key
-		return xLong | yLong;
 	}
 	
 	// making outputs more readable

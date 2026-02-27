@@ -5,11 +5,7 @@ import java.util.*;
 
 public class Tile 
 {
-	// attributes
-	final private static long xPrime = 73856093L;
-	final private static long yPrime = 19349663L;
-	final private static long start = 12345678;
-	
+	// attributes	
 	private Role hidden = Role.Blank;
 	private Role shown =  Role.Unknown;
 	private final long chunkKey;
@@ -24,28 +20,60 @@ public class Tile
 		this.xGlobal = xGlobal;
 		this.yGlobal = yGlobal;
 		
-		// initializing the key of the chunk the tile belongs to
-		// finding the chunk it belongs to 
-		int xChunk = xGlobal / Chunk.ChunkSize;
-		int yChunk = yGlobal / Chunk.ChunkSize;
-		
 		// initializing the local coordinates
-		if(xGlobal >= 0) {xLocal = xGlobal % Chunk.ChunkSize;} else {
-			xLocal = Chunk.ChunkSize - (Math.abs(xGlobal) % Chunk.ChunkSize);
-			xChunk--;}
+		if(xGlobal >= 0) {xLocal = xGlobal % Chunk.ChunkSize;} 
+		else {xLocal = Chunk.ChunkSize - (Math.abs(xGlobal) % Chunk.ChunkSize);}
 		
-		if(yGlobal >= 0) {yLocal = yGlobal % Chunk.ChunkSize;} else {
-			yLocal = Chunk.ChunkSize - (Math.abs(yGlobal) % Chunk.ChunkSize);
-			yChunk--;}
+		if(yGlobal >= 0) {yLocal = yGlobal % Chunk.ChunkSize;} 
+		else {yLocal = Chunk.ChunkSize - (Math.abs(yGlobal) % Chunk.ChunkSize);}
 		
 		// getting the chunkKey
-		long xLong = (long) xChunk << 32;
-		long yLong = (long) yChunk & 0xffffffffL;
-		chunkKey = xLong | yLong;
+		int[] chunk = Chunk.getChunk(xGlobal, yGlobal);
+		chunkKey = Chunk.getKey(chunk[0], chunk[1]);
 	}
 	
 	// methods
 	
+	// static methods
+	// getting the key of the tile
+	public static long getKey(int x, int y) {
+		// making x occupy the upper 32 bits
+		long xLong = (long) x << 32;
+				
+		// making y occupy the lower 32 bits
+		long yLong = (long) y & 0xffffffffL;
+				
+		// combining the two to create the key
+		return xLong | yLong;
+	}
+	
+	// get the tile pos from the key
+	public static int[] getPos(long key) {
+		int[] chunk = new int[2];
+		
+		chunk[0] = (int) (key >> 32);
+		chunk[1] = (int) (key & 0x00000000ffffffffL);
+		
+		return chunk;
+	}
+	
+	// getting surrounding tiles
+	public static ArrayList<int[]> getSurrounding(int x, int y) {
+		// format: [[x,y], [x,y], ...]
+		ArrayList<int[]> tiles = new ArrayList<>();
+		
+		tiles.add(new int[] {x-1, y-1});
+		tiles.add(new int[] {x-1, y});
+		tiles.add(new int[] {x-1, y+1});
+		tiles.add(new int[] {x, y-1});
+		tiles.add(new int[] {x, y+1});
+		tiles.add(new int[] {x+1, y-1});
+		tiles.add(new int[] {x+1, y});
+		tiles.add(new int[] {x+1, y+1});
+		
+		return tiles;		
+	}
+		
 	// getter methods
 	public long getChunkKey() {return chunkKey;}
 	public int getXGlobal() {return xGlobal;}
@@ -62,65 +90,54 @@ public class Tile
 	public void removeFlag() {shown = Role.Unknown;}	
 	public void showTile() {hidden = shown;}
 	
+	// getting surrounding tiles
+	public ArrayList<int[]> globalSurrounding() {
+		// format: [[x,y], [x,y], ...]
+		ArrayList<int[]> tiles = new ArrayList<>();
+		
+		tiles.add(new int[] {xGlobal-1, yGlobal-1});
+		tiles.add(new int[] {xGlobal-1, yGlobal});
+		tiles.add(new int[] {xGlobal-1, yGlobal+1});
+		tiles.add(new int[] {xGlobal, yGlobal-1});
+		tiles.add(new int[] {xGlobal, yGlobal+1});
+		tiles.add(new int[] {xGlobal+1, yGlobal-1});
+		tiles.add(new int[] {xGlobal+1, yGlobal});
+		tiles.add(new int[] {xGlobal+1, yGlobal+1});
+		
+		return tiles;		
+	}
+	public ArrayList<int[]> localSurrounding() {
+		// format: [[x,y], [x,y], ...]
+		ArrayList<int[]> tiles = new ArrayList<>();
+		
+		tiles.add(new int[] {xLocal-1, yLocal-1});
+		tiles.add(new int[] {xLocal-1, yLocal});
+		tiles.add(new int[] {xLocal-1, yLocal+1});
+		tiles.add(new int[] {xLocal, yLocal-1});
+		tiles.add(new int[] {xLocal, yLocal+1});
+		tiles.add(new int[] {xLocal+1, yLocal-1});
+		tiles.add(new int[] {xLocal+1, yLocal});
+		tiles.add(new int[] {xLocal+1, yLocal+1});
+		
+		return tiles;
+	}
+	
+	// getting the key of the tile 
+	public long getKey() {
+		// making x occupy the upper 32 bits
+		long xLong = (long) xGlobal << 32;
+				
+		// making y occupy the lower 32 bits
+		long yLong = (long) yGlobal & 0xffffffffL;
+				
+		// combining the two to create the key
+		return xLong | yLong;
+	}
+	
 	// update tile number
 	public void placeNumber(int num) {
 		hidden = Role.Number;
 		number = num;
-	}
-	
-	// is a bomb
-	public boolean isBomb(long seed, double density) {
-		long hash = start;
-		hash ^= xGlobal * xPrime;
-		hash ^= yGlobal * yPrime;
-		hash ^= seed;
-		
-		hash = hash & Long.MAX_VALUE;
-		
-		boolean bomb = ((double) (hash / Long.MAX_VALUE)) < density;
-		if(bomb) {hidden = Role.Bomb;}
-		
-		return bomb;
-	}
-	public boolean isBomb() {
-		// should only be used after the isBomb() with parameters is called
-		if(hidden == Role.Bomb) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	// getting surrounding tiles
-	public ArrayList<Long> globalSurrounding() {
-		// format: [[x,y], [x,y], ...]
-		ArrayList<Long> tiles = new ArrayList<>();
-		
-		tiles.add(Chunk.getKey(xGlobal-1, yGlobal-1));
-		tiles.add(Chunk.getKey(xGlobal-1, yGlobal));
-		tiles.add(Chunk.getKey(xGlobal-1, yGlobal+1));
-		tiles.add(Chunk.getKey(xGlobal, yGlobal-1));
-		tiles.add(Chunk.getKey(xGlobal, yGlobal+1));
-		tiles.add(Chunk.getKey(xGlobal+1, yGlobal-1));
-		tiles.add(Chunk.getKey(xGlobal+1, yGlobal));
-		tiles.add(Chunk.getKey(xGlobal+1, yGlobal+1));
-		
-		return tiles;		
-	}
-	public ArrayList<Long> localSurrounding() {
-		// format: [[x,y], [x,y], ...]
-		ArrayList<Long> tiles = new ArrayList<>();
-		
-		tiles.add(Chunk.getKey(xLocal-1, yLocal-1));
-		tiles.add(Chunk.getKey(xLocal-1, yLocal));
-		tiles.add(Chunk.getKey(xLocal-1, yLocal+1));
-		tiles.add(Chunk.getKey(xLocal, yLocal-1));
-		tiles.add(Chunk.getKey(xLocal, yLocal+1));
-		tiles.add(Chunk.getKey(xLocal+1, yLocal-1));
-		tiles.add(Chunk.getKey(xLocal+1, yLocal));
-		tiles.add(Chunk.getKey(xLocal+1, yLocal+1));
-		
-		return tiles;
 	}
 	
 	// making outputs more readable
