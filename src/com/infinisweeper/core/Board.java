@@ -39,4 +39,35 @@ public class Board
 		
 		return value < density;
 	}
+	
+	// values the tile by number
+	public char valueAt(int globalX, int globalY) {
+		if(isBomb(globalX, globalY)) {return 'X';}
+		int count = 0;
+			
+		for(int[] pos : surroundingOf(globalX, globalY)) {
+			if(isBomb(pos[0], pos[1])) {count++;}
+		}
+			
+		if(count == 0) {return ' ';}
+		
+		// converting the count to a char
+		return (char) (count + '0');
+	}
+	
+	// returns a list of the surrounding coordinates
+	public int[][] surroundingOf(int globalX, int globalY) {
+		int[][] around = new int[8][2];
+		
+		around[0] = new int[] {globalX-1, globalY-1};
+		around[1] = new int[] {globalX-1, globalY};
+		around[2] = new int[] {globalX-1, globalY+1};
+		around[3] = new int[] {globalX, globalY-1};
+		around[4] = new int[] {globalX, globalY+1};
+		around[5] = new int[] {globalX+1, globalY-1};
+		around[6] = new int[] {globalX+1, globalY};
+		around[7] = new int[] {globalX+1, globalY+1};
+
+		return around;
+	}
 }
