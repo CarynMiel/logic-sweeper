@@ -5,12 +5,10 @@ import java.util.*;
 public class Game {
 	private Board hidden;
 	private Map<Long, Character> shown = new HashMap<>();
-	private int xMax, xMin, yMax, yMin;
+	private int xMax = 1, xMin = -1, yMax = 1, yMin = -1;
 	
 	public Game(double density, long seed) {
 		hidden = new Board(density, seed);
-		xMax = 1; xMin = -1; 
-		yMax = 1; yMin = -1;
 	}
 	
 	public int flagCount(long key) {
@@ -26,7 +24,7 @@ public class Game {
 	}
 	
 	public void flag(long key) {
-		if(shown.get(key) == Tile.Unknown) {
+		if(shown.get(key) == null || shown.get(key) == Tile.Unknown) {
 			shown.put(key, Tile.Flag);
 		} else if(shown.get(key) == Tile.Flag){
 			shown.put(key, Tile.Unknown);
@@ -37,6 +35,7 @@ public class Game {
 	}
 	
 	public boolean isFlagged(long key) {
+		if(shown.get(key) == null) {return false;}
 		return shown.get(key) == Tile.Flag;
 	}
 	public boolean isFlagged(int globalX, int globalY) {
@@ -48,11 +47,14 @@ public class Game {
 		queue.add(Tile.key(globalX, globalY));
 		
 		// surrounding open if number matches flags around
-		boolean digit = Character.isDigit(shown.get(queue.peek()));
-		if(digit && flagCount(queue.peek()) == shown.get(queue.peek())) {
-			Long[] around = Tile.surroundingOf(queue.peek());
-			for(long coord : around) {
-				queue.add(coord);
+		if(shown.get(queue.peek()) != null) {
+			boolean digit = Character.isDigit(shown.get(queue.peek()));
+			boolean match = (char) (flagCount(globalX, globalY) + '0') == hidden.valueAt(globalX, globalY);
+			if(digit && match) {
+				Long[] around = Tile.surroundingOf(queue.peek());
+				for(long coord : around) {
+					queue.add(coord);
+				}
 			}
 		}
 		
@@ -60,7 +62,7 @@ public class Game {
 		while(!queue.isEmpty()) {
 			long key = queue.remove();
 			
-			if(shown.containsKey(key)) {continue;}
+			if(shown.containsKey(key) && shown.get(key) != Tile.Unknown) {continue;}
 			shown.put(key, hidden.valueAt(key));
 			
 			// updates the minimum and maximum
@@ -83,26 +85,54 @@ public class Game {
 		open(Tile.x(key), Tile.y(key));
 	}
 	
-	public void showHidden() {
+	public String seeHidden() {
+		String text = "  ";
+		for(int x=xMin; x<=xMax; x++) {
+			if(x % 10 == 0) {
+				text += Math.abs(x/10) + " ";
+			} else {
+				text += Math.abs(x%10) + " ";
+			}
+		} text += "\n";
 		for(int y=yMin; y<=yMax; y++) {
+			if(y % 10 == 0) {
+				text += Math.abs(y/10) + " ";
+			} else {
+				text += Math.abs(y%10) + " ";
+			}
 			for(int x=xMin; x<=xMax; x++) {
-				System.out.print(hidden.valueAt(x, y) + " ");
-			} System.out.println();
-		} 
+				text += hidden.valueAt(x, y) + " ";
+			} text += "\n";
+		} return text;
 	}
 	
-	public void showShown() {
+	public String seeShown() {
+		String text = "  ";
+		for(int x=xMin; x<=xMax; x++) {
+			if(x % 10 == 0) {
+				text += Math.abs(x/10) + " ";
+			} else {
+				text += Math.abs(x%10) + " ";
+			} 
+		} text += "\n";
 		for(int y=yMin; y<=yMax; y++) {
+			if(y % 10 == 0) {
+				text += Math.abs(y/10) + " ";
+			} else {
+				text += Math.abs(y%10) + " ";
+			}
 			for(int x=xMin; x<=xMax; x++) {
 				if(shown.get(Tile.key(x, y)) == null) {
-					System.out.print("+ ");
+					text += Tile.Unknown + " ";
 				} else {
-					System.out.print(shown.get(Tile.key(x, y)) + " ");
+					text += shown.get(Tile.key(x, y)) + " ";
 				}
-			} System.out.println();
-		}
+			} text += "\n";
+		} return text;
 	}
 	
+	public Board hidden() {return hidden;}
+	public Map<Long, Character> shown() {return shown;}
 	public int xMin() {return xMin;}
 	public int xMax() {return xMax;}
 	public int yMin() {return yMin;}
