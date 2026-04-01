@@ -24,8 +24,8 @@ public class Board
 	public boolean isBomb(int globalX, int globalY) {
 		long hash = start;
 		hash ^= seed;
-		hash ^= primeX * globalX;
-		hash ^= primeY * globalY;
+		hash ^= (long) primeX * globalX;
+		hash ^= (long) primeY * globalY;
 		hash *= scramble;
 		//System.out.println("(" + globalX + ", " + globalY + ")");
 		//System.out.println(Math.abs(hash) / (double) Long.MAX_VALUE);
