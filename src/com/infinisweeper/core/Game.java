@@ -13,6 +13,18 @@ public class Game {
 		yMax = 1; yMin = -1;
 	}
 	
+	public int flagCount(long key) {
+		int count = 0;
+		Long[] around = Tile.surroundingOf(key);
+		for(Long coord : around) {
+			if(isFlagged(coord)) {count++;}
+		}
+		return count;
+	}
+	public int flagCount(int x, int y) {
+		return flagCount(Tile.key(x, y));
+	}
+	
 	public void flag(long key) {
 		if(shown.get(key) == Tile.Unknown) {
 			shown.put(key, Tile.Flag);
@@ -24,6 +36,13 @@ public class Game {
 		flag(Tile.key(x, y));
 	}
 	
+	public boolean isFlagged(long key) {
+		return shown.get(key) == Tile.Flag;
+	}
+	public boolean isFlagged(int globalX, int globalY) {
+		return isFlagged(Tile.key(globalX, globalY));
+	}
+	
 	public void open(int globalX, int globalY) {
 		Queue<Long> queue = new ArrayDeque<>();
 		queue.add(Tile.key(globalX, globalY));
@@ -32,7 +51,7 @@ public class Game {
 			Long key = queue.remove();
 			
 			if(shown.containsKey(key)) {continue;}
-			shown.put(key, hidden.valueAt(Tile.x(key), Tile.y(key)));
+			shown.put(key, hidden.valueAt(key));
 			
 			// updates the minimum and maximum
 			if(Tile.x(key) < xMin) {xMin = Tile.x(key);}
@@ -41,8 +60,8 @@ public class Game {
 			if(Tile.y(key) < yMin) {yMin = Tile.y(key);}
 			else if(Tile.y(key) > yMax) {yMax = Tile.y(key);}
 			
-			// adding more to queue for flood release
-			if(hidden.valueAt(Tile.x(key), Tile.y(key)) == Tile.Blank) {
+			// Opening a blank tile
+			if(hidden.valueAt(key) == Tile.Blank) {
 				Long[] around = Tile.surroundingOf(key);
 				for(Long coord : around) {
 					queue.add(coord);

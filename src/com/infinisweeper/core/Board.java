@@ -35,6 +35,9 @@ public class Board
 		
 		return value < density;
 	}
+	public boolean isBomb(long key) {
+		return isBomb(Tile.x(key), Tile.y(key));
+	}
 	
 	// values the tile by number
 	public char valueAt(int globalX, int globalY) {
@@ -49,5 +52,8 @@ public class Board
 		
 		// converting the count to a char
 		return (char) (count + '0');
+	}
+	public char valueAt(long key) {
+		return valueAt(Tile.x(key), Tile.y(key));
 	}
 }
