@@ -16,7 +16,7 @@ public class Game {
 	public int flagCount(long key) {
 		int count = 0;
 		Long[] around = Tile.surroundingOf(key);
-		for(Long coord : around) {
+		for(long coord : around) {
 			if(isFlagged(coord)) {count++;}
 		}
 		return count;
@@ -47,8 +47,18 @@ public class Game {
 		Queue<Long> queue = new ArrayDeque<>();
 		queue.add(Tile.key(globalX, globalY));
 		
+		// surrounding open if number matches flags around
+		boolean digit = Character.isDigit(shown.get(queue.peek()));
+		if(digit && flagCount(queue.peek()) == shown.get(queue.peek())) {
+			Long[] around = Tile.surroundingOf(queue.peek());
+			for(long coord : around) {
+				queue.add(coord);
+			}
+		}
+		
+		// flood open for blank tiles
 		while(!queue.isEmpty()) {
-			Long key = queue.remove();
+			long key = queue.remove();
 			
 			if(shown.containsKey(key)) {continue;}
 			shown.put(key, hidden.valueAt(key));
@@ -63,7 +73,7 @@ public class Game {
 			// Opening a blank tile
 			if(hidden.valueAt(key) == Tile.Blank) {
 				Long[] around = Tile.surroundingOf(key);
-				for(Long coord : around) {
+				for(long coord : around) {
 					queue.add(coord);
 				}
 			}
